@@ -3,12 +3,8 @@ import pandas as pd
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# ==============================
-# Load API Key safely
-# ==============================
-if "API_KEY" not in st.secrets:
-    st.error("❌ No API Key found! Please add it in .streamlit/secrets.toml or in Streamlit Cloud → App → Settings → Secrets.")
-    st.stop()
+# ✅ Get your API key from Streamlit Secrets (don’t write it in GitHub!)
+API_KEY = st.secrets["API_KEY"]
 
 API_KEY = st.secrets["API_KEY"]
 YOUTUBE_API_SERVICE_NAME = "youtube"
