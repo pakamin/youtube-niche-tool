@@ -16,7 +16,7 @@ days = st.number_input("Enter Days to Search (1-30):", min_value=1, max_value=30
 
 # List of broader keywords
 keywords = [
- "hollywood celebrity", "football","hollywood gossip", "celebrity","Pet Care","Fitness Motivation","Movie Summaries","Tech Reviews","Gaming Walkthroughs","Cooking Recipes","Travel Vlogs","Life Hacks","Educational Explainers","Comedy Skits","Finance Tips","Self-Improvement","Motivational Stories","Product Unboxings","Science Experiments","Car Restoration","Mystery & True Crime","Book Summaries","History Documentaries","Food Challenges","DIY Projects","Parenting Tips","Language Learning","Health & Wellness","Mindset & Productivity","AI & Tech Trends","Minimalism Lifestyle","Art & Drawing","Sports Highlights","Music Reactions",
+ "Pet Care","Fitness Motivation","Movie Summaries","Tech Reviews","Gaming Walkthroughs","Cooking Recipes","Travel Vlogs","Life Hacks","Educational Explainers","Comedy Skits","Finance Tips","Self-Improvement","Motivational Stories","Product Unboxings","Science Experiments","Car Restoration","Mystery & True Crime","Book Summaries","History Documentaries","Food Challenges","DIY Projects","Parenting Tips","Language Learning","Health & Wellness","Mindset & Productivity","AI & Tech Trends","Minimalism Lifestyle","Art & Drawing","Sports Highlights","Music Reactions", "cricket"
 ]
 
 # Fetch Data Button
@@ -37,7 +37,7 @@ if st.button("Fetch Data"):
                 "type": "video",
                 "order": "viewCount",
                 "publishedAfter": start_date,
-                "maxResults": 10,
+                "maxResults": 5,
                 "key": API_KEY,
             }
 
@@ -87,7 +87,7 @@ if st.button("Fetch Data"):
                 views = int(stat["statistics"].get("viewCount", 0))
                 subs = int(channel["statistics"].get("subscriberCount", 0))
 
-                if subs < 1000:  # Only include channels with fewer than 1,000 subscribers
+                if subs < 3000:  # Only include channels with fewer than 3,000 subscribers
                     all_results.append({
                         "Title": title,
                         "Description": description,
