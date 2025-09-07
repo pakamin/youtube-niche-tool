@@ -111,8 +111,31 @@ keywords_input = st.text_area("Enter niche keywords (comma separated):")
 max_results = st.number_input("Max Results per keyword", min_value=1, max_value=50, value=10)
 max_subs = st.number_input("Max Subscribers (filter)", min_value=0, value=1000)
 min_views = st.number_input("Min Views (filter)", min_value=0, value=10000)
-video_type = st.selectbox("Select Video Type", ["All", "Video", "Shorts"])
+video_type = st.selectbox("Select type of content:", ("Video", "Shorts"))
 
+if st.button("Run Research"):
+    if not keywords_input.strip():
+        st.warning("⚠️ Please enter at least one keyword.")
+    else:
+        keywords = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
+        st.info("⏳ Running niche research... please wait.")
 
-keywords_input = st.text_area("Enter niche keywords (comma separated):")
+        results = niche_research(
+            keywords,
+            max_results=max_results,
+            max_subs=max_subs,
+            min_views=min_views,
+            video_type=video_type
+        )
 
+        df = pd.DataFrame(results)
+
+        if df.empty:
+            st.warning("No results found with the given filters.")
+        else:
+            st.success(f"✅ Found {len(df)} results!")
+            st.dataframe(df)
+
+            # CSV export
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button("📥 Download Results", csv, "youtube_niche_results.csv", "text/csv")
