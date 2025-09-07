@@ -40,36 +40,42 @@ def get_channel_stats(channel_ids):
     return request.execute()
 
 def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000):
-    all_results = []
-
+    output = []
     for keyword in keywords:
-        search_response = search_youtube(keyword, max_results=max_results)
+        try:
+            search_response = search_youtube(keyword, max_results=max_results)
+            
+            for item in search_response.get("items", []):
+                video_id = item["id"]["videoId"]
+                channel_id = item["snippet"]["channelId"]
 
-        video_ids = [item["id"]["videoId"] for item in search_response["items"]]
-        channel_ids = [item["snippet"]["channelId"] for item in search_response["items"]]
+                video_stats = youtube.videos().list(
+                    part="statistics",
+                    id=video_id
+                ).execute()
 
-        video_stats = get_video_stats(video_ids)
-        channel_stats = get_channel_stats(channel_ids)
+                channel_stats = youtube.channels().list(
+                    part="statistics",
+                    id=channel_id
+                ).execute()
 
-        for video, channel in zip(video_stats["items"], channel_stats["items"]):
-            video_title = video["snippet"]["title"]
-            video_url = f"https://www.youtube.com/watch?v={video['id']}"
-            views = int(video["statistics"].get("viewCount", 0))
-            subs = int(channel["statistics"].get("subscriberCount", 0))
+                for video, channel in zip(video_stats.get("items", []), channel_stats.get("items", [])):
+                    subs = int(channel["statistics"].get("subscriberCount", 0))
+                    views = int(video["statistics"].get("viewCount", 0))
 
-            if subs < max_subs and views > min_views:
-                all_results.append({
-                    "Keyword": keyword,
-                    "Video Title": video_title,
-                    "Video URL": video_url,
-                    "Views": views,
-                    "Subscribers": subs
-                })
+                    if subs < max_subs and views > min_views:
+                        output.append({
+                            "Keyword": keyword,
+                            "Video URL": f"https://www.youtube.com/watch?v={video_id}",
+                            "Subscribers": subs,
+                            "Views": views
+                        })
 
-    df = pd.DataFrame(all_results)
-    if not df.empty:
-        df = df.sort_values(by="Subscribers", ascending=True).reset_index(drop=True)
-    return df
+        except Exception as e:
+            st.error(f"❌ Error processing keyword '{keyword}': {e}")
+
+    return output
+
 
 # -------------------- STREAMLIT UI --------------------
 st.title("📊 YouTube Niche Research Tool")
