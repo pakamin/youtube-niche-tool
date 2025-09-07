@@ -1,14 +1,14 @@
-import os
-import googleapiclient.discovery
+import streamlit as st
 import pandas as pd
+import googleapiclient.discovery
 
-# Replace with your YouTube Data API Key
-API_KEY = "AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw"
+# Load API key from Streamlit secrets
+API_KEY = st.secrets["AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw"]
 
-# Initialize API
+# Initialize YouTube API client
 youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=API_KEY)
 
-def search_youtube(keyword, max_results=20):
+def search_youtube(keyword, max_results=10):
     request = youtube.search().list(
         q=keyword,
         part="snippet",
@@ -31,11 +31,10 @@ def get_channel_stats(channel_ids):
     )
     return request.execute()
 
-def niche_research(keywords, max_results=20, max_subs=1000, min_views=10000):
+def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000):
     all_results = []
 
     for keyword in keywords:
-        print(f"\n🔍 Searching for: {keyword}")
         search_response = search_youtube(keyword, max_results=max_results)
 
         video_ids = [item["id"]["videoId"] for item in search_response["items"]]
@@ -59,22 +58,29 @@ def niche_research(keywords, max_results=20, max_subs=1000, min_views=10000):
                     "Subscribers": subs
                 })
 
-    # Sort results by subscribers ascending
     df = pd.DataFrame(all_results)
-    df = df.sort_values(by="Subscribers", ascending=True).reset_index(drop=True)
+    if not df.empty:
+        df = df.sort_values(by="Subscribers", ascending=True).reset_index(drop=True)
     return df
 
+# -------------------- STREAMLIT UI --------------------
+st.title("📊 YouTube Niche Research Tool")
 
-if __name__ == "__main__":
-    # Example usage
-    keywords = ["pet care", "car restoration", "fitness tips"]
-    results = niche_research(keywords, max_results=15, max_subs=1000, min_views=10000)
+keywords_input = st.text_area("Enter niche keywords (comma separated):", "pet care, car restoration, fitness tips")
+max_subs = st.number_input("Maximum Subscribers", min_value=0, value=1000, step=100)
+min_views = st.number_input("Minimum Views", min_value=0, value=10000, step=1000)
+max_results = st.slider("Max results per keyword", 5, 50, 15)
+
+if st.button("Run Research"):
+    keywords = [k.strip() for k in keywords_input.split(",")]
+    results = niche_research(keywords, max_results=max_results, max_subs=max_subs, min_views=min_views)
 
     if not results.empty:
-        print("\n✅ Final Results:\n")
-        print(results)
-        results.to_csv("youtube_niche_research.csv", index=False)
-        print("\n📂 Results saved to youtube_niche_research.csv")
-    else:
-        print("⚠️ No results found with given filters.")
+        st.success("✅ Results Found")
+        st.dataframe(results)
 
+        # Download button
+        csv = results.to_csv(index=False).encode("utf-8")
+        st.download_button("Download CSV", data=csv, file_name="youtube_niche_research.csv", mime="text/csv")
+    else:
+        st.warning("⚠️ No results found with given filters.")
