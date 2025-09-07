@@ -1,3 +1,5 @@
 streamlit
-google-api-python-client
 pandas
+google-api-python-client
+matplotlib
+xlsxwriter
