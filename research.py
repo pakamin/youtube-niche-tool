@@ -9,13 +9,21 @@ API_KEY = st.secrets["YOUTUBE_API_KEY"]
 youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=API_KEY)
 
 def search_youtube(keyword, max_results=10):
-    request = youtube.search().list(
-        q=keyword,
-        part="snippet",
-        type="video",
-        maxResults=max_results
-    )
-    return request.execute()
+    try:
+        request = youtube.search().list(
+            q=keyword,
+            part="snippet",
+            type="video",
+            maxResults=max_results
+        )
+        return request.execute()
+    except googleapiclient.errors.HttpError as e:
+        error_message = e.content.decode("utf-8") if hasattr(e, "content") else str(e)
+        st.error(f"❌ YouTube API Error for '{keyword}': {error_message}")
+        return {"items": []}
+    except Exception as e:
+        st.error(f"⚠️ Unexpected error: {e}")
+        return {"items": []}
 
 def get_video_stats(video_ids):
     request = youtube.videos().list(
@@ -85,17 +93,4 @@ if st.button("Run Research"):
     else:
         st.warning("⚠️ No results found with given filters.")
 
-
-def search_youtube(keyword, max_results=10):
-    try:
-        request = youtube.search().list(
-            q=keyword,
-            part="snippet",
-            type="video",
-            maxResults=max_results
-        )
-        return request.execute()
-    except Exception as e:
-        st.error(f"❌ Failed to fetch results for '{keyword}': {e}")
-        return {"items": []}
 
