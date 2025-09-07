@@ -3,8 +3,11 @@ import pandas as pd
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# ✅ Get your API key from Streamlit Secrets (don’t write it in GitHub!)
+
+# ✅ Pull API key from Streamlit Secrets
 API_KEY = st.secrets["API_KEY"]
+
+youtube = build("youtube", "v3", developerKey=API_KEY)
 
 API_KEY = st.secrets["API_KEY"]
 YOUTUBE_API_SERVICE_NAME = "youtube"
