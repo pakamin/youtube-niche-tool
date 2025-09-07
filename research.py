@@ -1,115 +1,80 @@
-import streamlit as st
-import requests
-from datetime import datetime, timedelta
+import os
+import googleapiclient.discovery
+import pandas as pd
 
-# YouTube API Key
+# Replace with your YouTube Data API Key
 API_KEY = "AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw"
-YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
-YOUTUBE_VIDEO_URL = "https://www.googleapis.com/youtube/v3/videos"
-YOUTUBE_CHANNEL_URL = "https://www.googleapis.com/youtube/v3/channels"
 
-# Streamlit App Title
-st.title("YouTube Viral Topics Tool")
+# Initialize API
+youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=API_KEY)
 
-# Input Fields
-days = st.number_input("Enter Days to Search (1-30):", min_value=1, max_value=30, value=5)
+def search_youtube(keyword, max_results=20):
+    request = youtube.search().list(
+        q=keyword,
+        part="snippet",
+        type="video",
+        maxResults=max_results
+    )
+    return request.execute()
 
-# List of broader keywords
-keywords = [
- "Pet Care","Fitness Motivation","Movie Summaries","Tech Reviews","Gaming Walkthroughs","Cooking Recipes","Travel Vlogs","Life Hacks","Educational Explainers","Comedy Skits","Finance Tips","Self-Improvement","Motivational Stories","Product Unboxings","Science Experiments","Car Restoration","Mystery & True Crime","Book Summaries","History Documentaries","Food Challenges","DIY Projects","Parenting Tips","Language Learning","Health & Wellness","Mindset & Productivity","AI & Tech Trends","Minimalism Lifestyle","Art & Drawing","Sports Highlights","Music Reactions", "cricket"
-]
+def get_video_stats(video_ids):
+    request = youtube.videos().list(
+        part="statistics,snippet",
+        id=",".join(video_ids)
+    )
+    return request.execute()
 
-# Fetch Data Button
-if st.button("Fetch Data"):
-    try:
-        # Calculate date range
-        start_date = (datetime.utcnow() - timedelta(days=int(days))).isoformat("T") + "Z"
-        all_results = []
+def get_channel_stats(channel_ids):
+    request = youtube.channels().list(
+        part="statistics",
+        id=",".join(channel_ids)
+    )
+    return request.execute()
 
-        # Iterate over the list of keywords
-        for keyword in keywords:
-            st.write(f"Searching for keyword: {keyword}")
+def niche_research(keywords, max_results=20, max_subs=1000, min_views=10000):
+    all_results = []
 
-            # Define search parameters
-            search_params = {
-                "part": "snippet",
-                "q": keyword,
-                "type": "video",
-                "order": "viewCount",
-                "publishedAfter": start_date,
-                "maxResults": 5,
-                "key": API_KEY,
-            }
+    for keyword in keywords:
+        print(f"\n🔍 Searching for: {keyword}")
+        search_response = search_youtube(keyword, max_results=max_results)
 
-            # Fetch video data
-            response = requests.get(YOUTUBE_SEARCH_URL, params=search_params)
-            data = response.json()
+        video_ids = [item["id"]["videoId"] for item in search_response["items"]]
+        channel_ids = [item["snippet"]["channelId"] for item in search_response["items"]]
 
-            # Check if "items" key exists
-            if "items" not in data or not data["items"]:
-                st.warning(f"No videos found for keyword: {keyword}")
-                continue
+        video_stats = get_video_stats(video_ids)
+        channel_stats = get_channel_stats(channel_ids)
 
-            videos = data["items"]
-            video_ids = [video["id"]["videoId"] for video in videos if "id" in video and "videoId" in video["id"]]
-            channel_ids = [video["snippet"]["channelId"] for video in videos if "snippet" in video and "channelId" in video["snippet"]]
+        for video, channel in zip(video_stats["items"], channel_stats["items"]):
+            video_title = video["snippet"]["title"]
+            video_url = f"https://www.youtube.com/watch?v={video['id']}"
+            views = int(video["statistics"].get("viewCount", 0))
+            subs = int(channel["statistics"].get("subscriberCount", 0))
 
-            if not video_ids or not channel_ids:
-                st.warning(f"Skipping keyword: {keyword} due to missing video/channel data.")
-                continue
+            if subs < max_subs and views > min_views:
+                all_results.append({
+                    "Keyword": keyword,
+                    "Video Title": video_title,
+                    "Video URL": video_url,
+                    "Views": views,
+                    "Subscribers": subs
+                })
 
-            # Fetch video statistics
-            stats_params = {"part": "statistics", "id": ",".join(video_ids), "key": API_KEY}
-            stats_response = requests.get(YOUTUBE_VIDEO_URL, params=stats_params)
-            stats_data = stats_response.json()
+    # Sort results by subscribers ascending
+    df = pd.DataFrame(all_results)
+    df = df.sort_values(by="Subscribers", ascending=True).reset_index(drop=True)
+    return df
 
-            if "items" not in stats_data or not stats_data["items"]:
-                st.warning(f"Failed to fetch video statistics for keyword: {keyword}")
-                continue
 
-            # Fetch channel statistics
-            channel_params = {"part": "statistics", "id": ",".join(channel_ids), "key": API_KEY}
-            channel_response = requests.get(YOUTUBE_CHANNEL_URL, params=channel_params)
-            channel_data = channel_response.json()
+if __name__ == "__main__":
+    # Example usage
+    keywords = ["pet care", "car restoration", "fitness tips"]
+    results = niche_research(keywords, max_results=15, max_subs=1000, min_views=10000)
 
-            if "items" not in channel_data or not channel_data["items"]:
-                st.warning(f"Failed to fetch channel statistics for keyword: {keyword}")
-                continue
+    if not results.empty:
+        print("\n✅ Final Results:\n")
+        print(results)
+        results.to_csv("youtube_niche_research.csv", index=False)
+        print("\n📂 Results saved to youtube_niche_research.csv")
+    else:
+        print("⚠️ No results found with given filters.")
 
-            stats = stats_data["items"]
-            channels = channel_data["items"]
-
-            # Collect results
-            for video, stat, channel in zip(videos, stats, channels):
-                title = video["snippet"].get("title", "N/A")
-                description = video["snippet"].get("description", "")[:200]
-                video_url = f"https://www.youtube.com/watch?v={video['id']['videoId']}"
-                views = int(stat["statistics"].get("viewCount", 0))
-                subs = int(channel["statistics"].get("subscriberCount", 0))
-
-                if subs < 3000:  # Only include channels with fewer than 3,000 subscribers
-                    all_results.append({
-                        "Title": title,
-                        "Description": description,
-                        "URL": video_url,
-                        "Views": views,
-                        "Subscribers": subs
-                    })
-
-        # Display results
-        if all_results:
-            st.success(f"Found {len(all_results)} results across all keywords!")
-            for result in all_results:
-                st.markdown(
-                    f"**Title:** {result['Title']}  \n"
-                    f"**Description:** {result['Description']}  \n"
-                    f"**URL:** [Watch Video]({result['URL']})  \n"
-                    f"**Views:** {result['Views']}  \n"
-                    f"**Subscribers:** {result['Subscribers']}"
-                )
-                st.write("---")
-        else:
-            st.warning("No results found for channels with fewer than 3,000 subscribers.")
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
