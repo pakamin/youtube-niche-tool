@@ -34,7 +34,7 @@ if st.button("Fetch Data"):
             search_params = {
                 "part": "snippet",
                 "q": keyword,
-                "type": "shorts",
+                "type": "video",
                 "order": "viewCount",
                 "publishedAfter": start_date,
                 "maxResults": 10,
