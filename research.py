@@ -84,3 +84,18 @@ if st.button("Run Research"):
         st.download_button("Download CSV", data=csv, file_name="youtube_niche_research.csv", mime="text/csv")
     else:
         st.warning("⚠️ No results found with given filters.")
+
+
+def search_youtube(keyword, max_results=10):
+    try:
+        request = youtube.search().list(
+            q=keyword,
+            part="snippet",
+            type="video",
+            maxResults=max_results
+        )
+        return request.execute()
+    except Exception as e:
+        st.error(f"❌ Failed to fetch results for '{keyword}': {e}")
+        return {"items": []}
+
