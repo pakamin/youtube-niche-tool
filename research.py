@@ -16,13 +16,7 @@ days = st.number_input("Enter Days to Search (1-30):", min_value=1, max_value=30
 
 # List of broader keywords
 keywords = [
- "Affair Relationship Stories", "Reddit Update", "Reddit Relationship Advice", "Reddit Relationship", 
-"Reddit Cheating", "AITA Update", "Open Marriage", "Open Relationship", "X BF Caught", 
-"Stories Cheat", "X GF Reddit", "AskReddit Surviving Infidelity", "GurlCan Reddit", 
-"Cheating Story Actually Happened", "Cheating Story Real", "True Cheating Story", 
-"Reddit Cheating Story", "R/Surviving Infidelity", "Surviving Infidelity", 
-"Reddit Marriage", "Wife Cheated I Can't Forgive", "Reddit AP", "Exposed Wife", 
-"Cheat Exposed" , "hollywood celebrity", "hollywood gossip", "celebrity",
+ "hollywood celebrity", "hollywood gossip", "celebrity",
 ]
 
 # Fetch Data Button
@@ -40,11 +34,11 @@ if st.button("Fetch Data"):
             search_params = {
                 "part": "snippet",
                 "q": keyword,
-                "type": "video",
+                "type": "shorts",
                 "order": "viewCount",
                 "publishedAfter": start_date,
-                "maxResults": 5,
-                "key": API_KEY,
+                "maxResults": 10,
+                "key": AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw,
             }
 
             # Fetch video data
