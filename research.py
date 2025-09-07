@@ -108,4 +108,11 @@ def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000, vid
 st.title("📊 YouTube Niche Research Tool")
 
 keywords_input = st.text_area("Enter niche keywords (comma separated):")
+max_results = st.number_input("Max Results per keyword", min_value=1, max_value=50, value=10)
+max_subs = st.number_input("Max Subscribers (filter)", min_value=0, value=1000)
+min_views = st.number_input("Min Views (filter)", min_value=0, value=10000)
+video_type = st.selectbox("Select Video Type", ["All", "Video", "Shorts"])
+
+
+keywords_input = st.text_area("Enter niche keywords (comma separated):")
 
