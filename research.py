@@ -4,9 +4,13 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # ==============================
-# YouTube API Setup
+# Load API Key safely
 # ==============================
-API_KEY = st.secrets["API_KEY"]  # Store your API Key in .streamlit/secrets.toml
+if "API_KEY" not in st.secrets:
+    st.error("❌ No API Key found! Please add it in .streamlit/secrets.toml or in Streamlit Cloud → App → Settings → Secrets.")
+    st.stop()
+
+API_KEY = st.secrets["API_KEY"]
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
