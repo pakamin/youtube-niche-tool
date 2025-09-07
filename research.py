@@ -99,4 +99,21 @@ if st.button("Run Research"):
     else:
         st.warning("⚠️ No results found with given filters.")
 
+import pandas as pd
+
+# Run the research
+results = niche_research(keywords, max_results=max_results, max_subs=max_subs, min_views=min_views)
+
+# Convert list to DataFrame
+df = pd.DataFrame(results)
+
+if df.empty:
+    st.warning("No results found with the given filters.")
+else:
+    st.success(f"Found {len(df)} results!")
+    st.dataframe(df)
+
+    # Optionally: allow CSV download
+    csv = df.to_csv(index=False).encode("utf-8")
+    st.download_button("📥 Download Results", csv, "youtube_niche_results.csv", "text/csv")
 
