@@ -3,17 +3,17 @@ import pandas as pd
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# ==============================
+# Get API key from Streamlit Secrets
+# ==============================
+try:
+    API_KEY = st.secrets["API_KEY"]  # Make sure this exists in Streamlit Cloud Secrets
+except KeyError:
+    st.error("❌ No API Key found! Please add it in Streamlit Cloud → App → Settings → Secrets.")
+    st.stop()
 
-# ✅ Pull API key from Streamlit Secrets
-API_KEY = st.secrets["API_KEY"]
-
+# Build YouTube API client
 youtube = build("youtube", "v3", developerKey=API_KEY)
-
-API_KEY = st.secrets["API_KEY"]
-YOUTUBE_API_SERVICE_NAME = "youtube"
-YOUTUBE_API_VERSION = "v3"
-
-youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=API_KEY)
 
 # ==============================
 # Functions
@@ -32,7 +32,6 @@ def search_youtube(keyword, max_results=10):
         st.error(f"❌ YouTube API Error for '{keyword}': {e}")
         return None
 
-
 def get_video_stats(video_ids):
     """Fetch statistics for a list of video IDs"""
     try:
@@ -45,7 +44,6 @@ def get_video_stats(video_ids):
         st.error(f"❌ Video stats error: {e}")
         return None
 
-
 def get_channel_stats(channel_ids):
     """Fetch statistics for a list of channel IDs"""
     try:
@@ -57,7 +55,6 @@ def get_channel_stats(channel_ids):
     except HttpError as e:
         st.error(f"❌ Channel stats error: {e}")
         return None
-
 
 def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000):
     """Run niche research and return filtered results"""
@@ -85,7 +82,6 @@ def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000):
             views = int(vstat["statistics"].get("viewCount", 0))
             subs = int(cstat["statistics"].get("subscriberCount", 0))
 
-            # ✅ Apply filters
             if subs <= max_subs and views >= min_views:
                 all_results.append({
                     "Keyword": keyword,
