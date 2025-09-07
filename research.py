@@ -38,7 +38,7 @@ if st.button("Fetch Data"):
                 "order": "viewCount",
                 "publishedAfter": start_date,
                 "maxResults": 10,
-                "key": AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw,
+                "key": API_KEY,
             }
 
             # Fetch video data
