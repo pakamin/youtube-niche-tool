@@ -3,7 +3,7 @@ import pandas as pd
 import googleapiclient.discovery
 
 # Load API key from Streamlit secrets
-API_KEY = st.secrets["AIzaSyCLEvbICsSMhEdBGHYqF9KaPpLrJrFVjsw"]
+API_KEY = st.secrets["YOUTUBE_API_KEY"]
 
 # Initialize YouTube API client
 youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=API_KEY)
