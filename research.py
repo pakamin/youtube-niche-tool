@@ -22,7 +22,7 @@ keywords = [
 "Cheating Story Actually Happened", "Cheating Story Real", "True Cheating Story", 
 "Reddit Cheating Story", "R/Surviving Infidelity", "Surviving Infidelity", 
 "Reddit Marriage", "Wife Cheated I Can't Forgive", "Reddit AP", "Exposed Wife", 
-"Cheat Exposed"
+"Cheat Exposed" , "hollywood celebrity", "hollywood gossip", "celebrity",
 ]
 
 # Fetch Data Button
@@ -93,7 +93,7 @@ if st.button("Fetch Data"):
                 views = int(stat["statistics"].get("viewCount", 0))
                 subs = int(channel["statistics"].get("subscriberCount", 0))
 
-                if subs < 3000:  # Only include channels with fewer than 3,000 subscribers
+                if subs < 1000 and views > 10000:  # Only include channels with fewer than 1,000 subscribers
                     all_results.append({
                         "Title": title,
                         "Description": description,
