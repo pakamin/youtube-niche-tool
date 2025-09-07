@@ -107,4 +107,5 @@ def niche_research(keywords, max_results=10, max_subs=1000, min_views=10000, vid
 # ==============================
 st.title("📊 YouTube Niche Research Tool")
 
-keywords_input = st_
+keywords_input = st.text_area("Enter niche keywords (comma separated):")
+
